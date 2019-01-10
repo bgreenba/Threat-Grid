@@ -260,10 +260,12 @@ def TG_isRecent(this_hash):
 def TG_submit(filename):
     submit_url=globalConfig['TGroot']+globalConfig['threat_grid_submit_path']
     parameters = {'api_key': globalConfig['threat_grid_api_key'], 'private': globalConfig['private']}
-    with open(filename, 'rb') as sample:
-        verbose('submitting file to '+submit_url,3)
-        r = requests.post(submit_url, files={'sample': sample}, params=parameters)
-        verbose(r.json(),3)
+    if not globalConfig['experiment']:
+        with open(filename, 'rb') as sample:
+            verbose('submitting file to '+submit_url,3)
+            r = requests.post(submit_url, files={'sample': sample}, params=parameters)
+            verbose(r.json(),3)
+    else:  verbose('not submitting file because -x/--experiment was specified')
     return()
     
                                        
