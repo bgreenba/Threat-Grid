@@ -7,7 +7,7 @@ TG_SESSION = requests.session()
 def get_cmd(argv):
     parser = argparse.ArgumentParser(
         description='TGsubmit - take specifed files and submit to Threat Grid if currently unknown to TG and AMP FileDB',
-        epilog='''bla bla bla''' 
+        epilog='''Poorly coded in spare time by pasting together the work of better programmers - provided without warranties or support''' 
         )
     #program level options
     config=parser.add_argument_group('Configuration','Program and API configuration settings')
@@ -24,7 +24,7 @@ def get_cmd(argv):
     TGopts=parser.add_argument_group('Threat Grid Options','Threat Grid API configuration settings')
     TGopts.add_argument('--threat_grid_server', help='specify a server hostname (overrides config file)')
     TGopts.add_argument('--threat_grid_api_key', help='specify an API key for Threat Grid (overrides config file)')
-    TGopts.add_argument('-p', '--private', help='submit the file privately', action='store_true')
+    TGopts.add_argument('-p', '--private', help='submit the file privately', action='store_true', default=False)
 
     #threat response options
     TRopts=parser.add_argument_group('Threat Response Options','Threat Response API configuration settings')
@@ -259,7 +259,7 @@ def TG_isRecent(this_hash):
     
 def TG_submit(filename):
     submit_url=globalConfig['TGroot']+globalConfig['threat_grid_submit_path']
-    parameters = {'api_key': globalConfig['threat_grid_api_key']}
+    parameters = {'api_key': globalConfig['threat_grid_api_key'], 'private': globalConfig['private']}
     with open(filename, 'rb') as sample:
         verbose('submitting file to '+submit_url,3)
         r = requests.post(submit_url, files={'sample': sample}, params=parameters)
