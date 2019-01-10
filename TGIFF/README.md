@@ -8,6 +8,7 @@ defaults from a configuration file. Usage of this script requires a valid API
 key. This utility is provided as an example, with no guarantees or support
 options.
 
+```
 TGIFF.py -h
 usage: TGIFF.py [-h] [-a AFTER_TIME] [-b BEFORE_TIME] [-c CFG_FILE]
                 [-d FEED_DATE] [-f OUTPUT_FORMAT] [-x] [-k API_KEY]
@@ -61,4 +62,4 @@ optional arguments:
   -v, --verbose         print diagnostic and troubleshooting information to
                         stdout
 
-
+```
