@@ -117,60 +117,10 @@ for BI in BIjson['data']['indicators']:
             BI[field]=""
         elif not isinstance(BI[field], str):
             BI[field]=str(BI[field])
-        else: BI[field]=BI[field].replace('"',"'")
+        else: BI[field]=BI[field].replace('"',"'").replace('\n','')
         verbose('     '+BI[field],2)
         op.append('"'+BI[field]+'"')
     print(','.join(op))
 
 
 exit()
-
-#iterate through input
-for line in fileinput.input(args['file']):
-    line=line.strip()
-    thisout={}
-    thisprint=[]
-    verbose( 'starting query for hash '+line)
-    thisout['hash']=line
-    data=api_key_QS+'&checksum_sample='+line
-    hash_search=myget(samples_url+finalConfig['search_path'],data)
-    verbose(hash_search,3)
-    thisout['count']=str(hash_search['data']['current_item_count'])
-    if int(thisout['count'])>0:
-        these_samples =[]
-        dates=[]
-        scores=[]
-        maxdate='0'
-        lastscore='0'
-        #iterate through samples in response
-        for sample in hash_search['data']['items']:
-            verbose('getting threat report',2)
-            threatreport=myget('/'.join([samples_url,sample['sample'],finalConfig['threat_path']]), api_key_QS)
-            these_samples.append({'date':sample['ts'], 'score':threatreport['data']['score']})
-            dates.append(sample['ts'])
-            scores.append(threatreport['data']['score'])
-        thisout['first_seen']=min(dates)
-        thisout['last_seen']=max(dates)
-        thisout['min_score']=str(min(scores))
-        thisout['max_score']=str(max(scores))
-        thisout['avg_score']=str(round(sum(scores)/int(thisout['count']),2))
-        for item in these_samples:
-            if item['date'] == thisout['last_seen']:
-                thisout['last_score']=str(item['score'])
-        
-        #print out output
-        for field in oporder:
-            thisprint.append(thisout[field])
-        print(','.join(thisprint))
-
-
-#print ('hash,count,first_seen,last_seen,min_score,avg_score,max_score,last_score')
-#for item in output:
-#   print (','.join([item['hash'],str(item['count']),item['first_seen'],item['last_seen'],str(item['min_score']),str(item['avg_score']),str(item['max_score']),str(item['last_score'])]))
-        
-    
-    
-
-
-
-
