@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 import requests, datetime, configparser, argparse, sys, json, hashlib, os
 
 TR_SESSION = requests.session()
@@ -7,7 +7,7 @@ TG_SESSION = requests.session()
 def get_cmd(argv):
     parser = argparse.ArgumentParser(
         description='TGsubmit - take specifed files and submit to Threat Grid if currently unknown to TG and AMP FileDB',
-        epilog='''Poorly coded in spare time by pasting together the work of better programmers - provided without warranties or support''' 
+        epilog='''bla bla bla''' 
         )
     #program level options
     config=parser.add_argument_group('Configuration','Program and API configuration settings')
@@ -24,7 +24,7 @@ def get_cmd(argv):
     TGopts=parser.add_argument_group('Threat Grid Options','Threat Grid API configuration settings')
     TGopts.add_argument('--threat_grid_server', help='specify a server hostname (overrides config file)')
     TGopts.add_argument('--threat_grid_api_key', help='specify an API key for Threat Grid (overrides config file)')
-    TGopts.add_argument('-p', '--private', help='submit the file privately', action='store_true', default=False)
+    TGopts.add_argument('-p', '--private', help='submit the file privately', action='store_true')
 
     #threat response options
     TRopts=parser.add_argument_group('Threat Response Options','Threat Response API configuration settings')
@@ -46,7 +46,7 @@ def get_config_file_opts():
 
     #get all the general config
     GENcfg=dict(config.items('General'))
-    verbose('\n'.join(['General options from config file are:','\n'.join('{}={}'.format(key,val) for key, val in GENcfg.items())]),3)
+    verbose('\n\b'.join(['General options from config file are:','\n'.join('{}={}'.format(key,val) for key, val in GENcfg.items())]),3)
     #get all the TG config
     global TGcfg
     TGcfg=dict(config.items('ThreatGrid'))
@@ -87,7 +87,7 @@ def get_all_opts():
 
 
 def verbose(msg, vlvl=1):
-    if cmd['verbose'] >=vlvl: print(msg,'\n')
+    if cmd['verbose'] >=vlvl: print(msg)
 
 def TR_generate_token():
     ''' Generate a new access token and write it to disk'''
@@ -225,7 +225,7 @@ def TR_isknown(this_hash):
                        else: verbose(module_label+'verdict = unknown')
                    else: verbose(module_label+'doc is not a verdict')
             else: verbose(module_label+'no verdicts from this module')
-        else: verbose(module_label+'not AMP or TG')
+        else: verbose(module_label+'don\'t care about this module')
     verbose('file is known? {}'.format(known))
     return(known)
 
@@ -233,8 +233,8 @@ def TG_isRecent(this_hash):
     verbose('searching for TG submissions of hash '+this_hash+' within the last {} days'.format(globalConfig['threat_grid_max_days']),2)
 
     #prep URLs and time
-    hash_url=globalConfig['TGroot']+globalConfig['threat_grid_samples_search_path']
-    hash_data='&'.join(['api_key='+globalConfig['threat_grid_api_key'],'checksum_sample='+this_hash])
+    hash_url=globalConfig['TGroot']+globalConfig['threat_grid_search_path']
+    hash_data='&'.join(['api_key='+globalConfig['threat_grid_api_key'],'advanced=true','q=sha256:'+this_hash])
     samples_url=globalConfig['TGroot']+globalConfig['threat_grid_samples_path']
     samples_data='api_key='+globalConfig['threat_grid_api_key']
     these_samples=[]
@@ -259,13 +259,11 @@ def TG_isRecent(this_hash):
     
 def TG_submit(filename):
     submit_url=globalConfig['TGroot']+globalConfig['threat_grid_submit_path']
-    parameters = {'api_key': globalConfig['threat_grid_api_key'], 'private': globalConfig['private']}
-    if not globalConfig['experiment']:
-        with open(filename, 'rb') as sample:
-            verbose('submitting file to '+submit_url,3)
-            r = requests.post(submit_url, files={'sample': sample}, params=parameters)
-            verbose(r.json(),3)
-    else:  verbose('not submitting file because -x/--experiment was specified')
+    parameters = {'api_key': globalConfig['threat_grid_api_key']}
+    with open(filename, 'rb') as sample:
+        verbose('submitting file to '+submit_url,3)
+        r = requests.post(submit_url, files={'sample': sample}, params=parameters)
+        verbose(r.json(),3)
     return()
     
                                        
@@ -280,8 +278,8 @@ def main():
             if not TG_isRecent(this_hash):
                 verbose('submitting file '+this_file)
                 TG_submit(this_file)
-            else: verbose('hash was submitted to TG in the last {} days, not submitting'.format(globalConfig['threat_grid_max_days']))
-        else: verbose('file is known, not submitting')
+            else: verbose('hash was submitted to TG in the last {} days'.format(globalConfig['threat_grid_max_days']))
+        else: verbose('file is known, no submitty')
 
 if __name__ == '__main__':
     main()
